@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { generatePDF } from '@/lib/pdf-generator';
+// import { generatePDF } from '@/lib/pdf-generator';
 
 interface Inscricao {
   id: string;
@@ -53,8 +53,10 @@ export default function InscricoesPage() {
         .select('pastor')
         .order('pastor');
 
-      setIgrejas([...new Set(igrejasData?.map(i => i.igreja) || [])]);
-      setPastores([...new Set(pastoresData?.map(p => p.pastor) || [])]);
+      const igrejasUnicas = Array.from(new Set(igrejasData?.map(i => i.igreja) || []));
+      const pastoresUnicos = Array.from(new Set(pastoresData?.map(p => p.pastor) || []));
+      setIgrejas(igrejasUnicas);
+      setPastores(pastoresUnicos);
     } catch (err) {
       console.error('Erro ao buscar opções:', err);
     }
@@ -150,18 +152,7 @@ export default function InscricoesPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Inscrições</h1>
           <div className="flex gap-2">
-            <Button
-              onClick={() => {
-                generatePDF(inscricoes, {
-                  nome: filtroNome || undefined,
-                  igreja: filtroIgreja || undefined,
-                  pastor: filtroPastor || undefined,
-                });
-              }}
-              variant="outline"
-            >
-              Exportar PDF
-            </Button>
+            {/* Temporariamente desativado: PDF generation */}
             <Link href="/admin/dashboard">
               <Button variant="outline">Voltar ao Dashboard</Button>
             </Link>
