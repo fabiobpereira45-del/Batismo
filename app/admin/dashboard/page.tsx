@@ -1,0 +1,175 @@
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+
+interface Inscricao {
+  id: string;
+  nome: string;
+  cpf: string;
+  data_nascimento: string;
+  telefone: string;
+  igreja: string;
+  pastor: string;
+  data_batismo: string;
+  created_at: string;
+}
+
+const AdminDashboard = () => {
+  const [inscricoes, setInscricoes] = useState<Inscricao[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState({
+    total: 0,
+    porIgreja: {} as Record<string, number>,
+    porPastor: {} as Record<string, number>,
+  });
+
+  useEffect(() => {
+    fetchInscricoes();
+  }, []);
+
+  const fetchInscricoes = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('inscricoes_batismo')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setInscricoes(data || []);
+
+      // Calcular estatísticas
+      const porIgreja: Record<string, number> = {};
+      const porPastor: Record<string, number> = {};
+
+      data?.forEach((item) => {
+        porIgreja[item.igreja] = (porIgreja[item.igreja] || 0) + 1;
+        porPastor[item.pastor] = (porPastor[item.pastor] || 0) + 1;
+      });
+
+      setStats({
+        total: data?.length || 0,
+        porIgreja,
+        porPastor,
+      });
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/admin/login';
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Carregando...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard Admin</h1>
+          <div className="space-x-4">
+            <Link href="/admin/inscricoes">
+              <Button>Ver Todas Inscrições</Button>
+            </Link>
+            <Button variant="outline" onClick={handleLogout}>
+              Sair
+            </Button>
+          </div>
+        </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
+        )}
+
+        {/* Cards de Estatísticas */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-500">Total de Inscrições</h3>
+            <p className="text-3xl font-bold text-gray-900 mt-2">{stats.total}</p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-500">Igrejas</h3>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {Object.keys(stats.porIgreja).length}
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-500">Pastores</h3>
+            <p className="text-3xl font-bold text-gray-900 mt-2">
+              {Object.keys(stats.porPastor).length}
+            </p>
+          </div>
+        </div>
+
+        {/* Últimas Inscrições */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Últimas Inscrições</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nome
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    CPF
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Igreja
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Data Batismo
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {inscricoes.slice(0, 5).map((inscricao) => (
+                  <tr key={inscricao.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {inscricao.nome}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {inscricao.cpf}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {inscricao.igreja}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(inscricao.data_batismo).toLocaleDateString('pt-BR')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {inscricoes.length > 5 && (
+            <div className="mt-4 text-center">
+              <Link href="/admin/inscricoes">
+                <Button variant="link">Ver todas ({inscricoes.length})</Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;
