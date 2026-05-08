@@ -5,7 +5,98 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-// import { generatePDF } from '@/lib/pdf-generator';
+
+// PDF generation will be done via dynamic import in the browser
+const generatePDF = async (inscricoes: any[], filtros?: any) => {
+  if (typeof window === 'undefined') return;
+  
+  const jsPDF = (await import('jspdf')).default;
+  await import('jspdf-autotable');
+  
+  const doc = new jsPDF();
+  
+  // Cabeçalho
+  doc.setFontSize(20);
+  doc.text('Igreja Assembléia de Deus', 105, 20, { align: 'center' });
+  doc.setFontSize(16);
+  doc.text('Ministério Tancredo Neves', 105, 30, { align: 'center' });
+  
+  doc.setFontSize(14);
+  doc.text('Relatório de Inscrições - Batismo', 105, 45, { align: 'center' });
+  
+  // Informações dos filtros aplicados
+  if (filtros) {
+    let filtrosTexto = 'Filtros: ';
+    if (filtros.nome) filtrosTexto += `Nome: ${filtros.nome} | `;
+    if (filtros.igreja) filtrosTexto += `Igreja: ${filtros.igreja} | `;
+    if (filtros.pastor) filtrosTexto += `Pastor: ${filtros.pastor} | `;
+    
+    if (filtrosTexto !== 'Filtros: ') {
+      doc.setFontSize(10);
+      doc.text(filtrosTexto.slice(0, -3), 105, 55, { align: 'center' });
+    }
+  }
+  
+  // Data de geração
+  const dataGeracao = new Date().toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  doc.setFontSize(10);
+  doc.text(`Gerado em: ${dataGeracao}`, 105, 65, { align: 'center' });
+  
+  // Tabela
+  const headers = [['Nome', 'CPF', 'Idade', 'Telefone', 'Igreja', 'Pastor', 'Data Batismo']];
+  
+  const data = inscricoes.map((inscricao: any) => {
+    const hoje = new Date();
+    const nascimento = new Date(inscricao.data_nascimento);
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mesDiff = hoje.getMonth() - nascimento.getMonth();
+    if (mesDiff < 0 || (mesDiff === 0 && hoje.getDate() < nascimento.getDate())) {
+      idade--;
+    }
+    
+    return [
+      inscricao.nome,
+      inscricao.cpf,
+      `${idade} anos`,
+      inscricao.telefone,
+      inscricao.igreja,
+      inscricao.pastor,
+      new Date(inscricao.data_batismo).toLocaleDateString('pt-BR'),
+    ];
+  });
+  
+  (doc as any).autoTable({
+    head: headers,
+    body: data,
+    startY: 75,
+    theme: 'grid',
+    styles: { fontSize: 9 },
+    headStyles: { fillColor: [66, 139, 202] },
+    margin: { top: 75 },
+  });
+  
+  // Rodapé
+  const pageCount = (doc as any).internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.text(
+      `Página ${i} de ${pageCount}`,
+      105,
+      doc.internal.pageSize.height - 10,
+      { align: 'center' }
+    );
+  }
+  
+  // Salvar o PDF
+  doc.save(`inscricoes-batismo-${new Date().toISOString().slice(0, 10)}.pdf`);
+};
 
 interface Inscricao {
   id: string;
@@ -152,7 +243,18 @@ export default function InscricoesPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Inscrições</h1>
           <div className="flex gap-2">
-            {/* Temporariamente desativado: PDF generation */}
+            <Button
+              onClick={() => {
+                generatePDF(inscricoes, {
+                  nome: filtroNome || undefined,
+                  igreja: filtroIgreja || undefined,
+                  pastor: filtroPastor || undefined,
+                });
+              }}
+              variant="outline"
+            >
+              Exportar PDF
+            </Button>
             <Link href="/admin/dashboard">
               <Button variant="outline">Voltar ao Dashboard</Button>
             </Link>
