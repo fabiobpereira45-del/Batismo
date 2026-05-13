@@ -4,6 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-context';
+import { generatePDF } from '@/lib/pdf-generator';
 
 interface Inscricao {
   id: string;
@@ -17,27 +20,54 @@ interface Inscricao {
   created_at: string;
 }
 
-const AdminDashboard = () => {
+export default function AdminDashboard() {
+  const router = useRouter();
+  const { user, loading, isMaster } = useAuth();
   const [inscricoes, setInscricoes] = useState<Inscricao[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({
     total: 0,
     porIgreja: {} as Record<string, number>,
     porPastor: {} as Record<string, number>,
   });
+  const [filtroNome, setFiltroNome] = useState('');
+  const [filtroIgreja, setFiltroIgreja] = useState('');
+  const [filtroPastor, setFiltroPastor] = useState('');
+
+  // Redirecionar se não for master
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/admin/login');
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
-    fetchInscricoes();
-  }, []);
+    if (isMaster) {
+      fetchInscricoes();
+    }
+  }, [isMaster]);
 
   const fetchInscricoes = async () => {
     try {
-      setLoading(true);
-      const { data, error } = await supabase
+      setLoadingData(true);
+      let query = supabase
         .from('inscricoes_batismo')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // Aplicar filtros
+      if (filtroNome) {
+        query = query.ilike('nome', `%${filtroNome}%`);
+      }
+      if (filtroIgreja) {
+        query = query.eq('igreja', filtroIgreja);
+      }
+      if (filtroPastor) {
+        query = query.eq('pastor', filtroPastor);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -60,16 +90,24 @@ const AdminDashboard = () => {
     } catch (err: any) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setLoadingData(false);
     }
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = '/admin/login';
+    router.push('/admin/login');
   };
 
-  if (loading) {
+  const handleDownloadPDF = () => {
+    generatePDF(inscricoes, {
+      nome: filtroNome || undefined,
+      igreja: filtroIgreja || undefined,
+      pastor: filtroPastor || undefined,
+    });
+  };
+
+  if (loading || !isMaster) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Carregando...</p>
@@ -115,6 +153,49 @@ const AdminDashboard = () => {
             <p className="text-3xl font-bold text-gray-900 mt-2">
               {Object.keys(stats.porPastor).length}
             </p>
+          </div>
+        </div>
+
+        {/* Filtros */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h2 className="text-lg font-medium mb-4">Filtros</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nome
+              </label>
+              <input
+                type="text"
+                value={filtroNome}
+                onChange={(e) => setFiltroNome(e.target.value)}
+                placeholder="Buscar por nome..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Igreja
+              </label>
+              <input
+                type="text"
+                value={filtroIgreja}
+                onChange={(e) => setFiltroIgreja(e.target.value)}
+                placeholder="Buscar por igreja..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Pastor
+              </label>
+              <input
+                type="text"
+                value={filtroPastor}
+                onChange={(e) => setFiltroPastor(e.target.value)}
+                placeholder="Buscar por pastor..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
           </div>
         </div>
 
@@ -170,6 +251,4 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
-};
-
-export default AdminDashboard;
+}
