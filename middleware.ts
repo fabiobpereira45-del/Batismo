@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
   // Verificar se é uma rota admin
   if (pathname.startsWith('/admin')) {
     // Verificar se o usuário está autenticado (ver cookie de sessão)
-    const supabaseSession = request.cookies.get('sb-access-token')?.value;
+    // const supabaseSession = request.cookies.get('sb-access-token')?.value;
     
     // Se não houver sessão e não estiver na página de login, redirecionar
     // (Desabilitado porque o Supabase padrão salva em localStorage, não em cookies.
