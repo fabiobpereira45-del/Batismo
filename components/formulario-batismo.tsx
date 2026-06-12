@@ -90,6 +90,26 @@ function validateCPF(cpf: string): boolean {
   return parseInt(digits[10]) === digit2;
 }
 
+const igrejasData = [
+  { nome: "ADMTN - ARENOSO I", pastor: "PR. Nicodemos Glória" },
+  { nome: "ADMTN - ARENOSO II", pastor: "PB. NATANAEL SANTANA" },
+  { nome: "ADMTN - ARENOSO III", pastor: "BP. Marcelo da Paixão" },
+  { nome: "ADMTN - CABULA VII", pastor: "Pb. Jeferson Guedes" },
+  { nome: "ADMTN - CONJUNTO ACM", pastor: "PB. ISAC SOUZA" },
+  { nome: "ADMTN - EDGARD SANTOS", pastor: "Pb. Marcos Almeida" },
+  { nome: "ADMTN - FINAL DE LINHA", pastor: "Pb. Ezequeil Mendes" },
+  { nome: "ADMTN - NOVA VILA", pastor: "Pb. Francisco Marinho" },
+  { nome: "ADMTN - RÓTULA I", pastor: "Pr. Joval Barreto" },
+  { nome: "ADMTN - RÓTULA II", pastor: "Pb. Robison Adorno" },
+  { nome: "ADMTN - RÓTULA III", pastor: "PB. SANDIVAL PASSOS" },
+  { nome: "ADMTN - RUA SÃO GERÔNIMO", pastor: "Pr. Samuel Miranda" },
+  { nome: "ADMTN - TANCREDO NEVES II", pastor: "Pr. Domingos Prado" },
+  { nome: "ADMTN - TANCREDO NEVES III", pastor: "PB. Claudio de Jesus Silva" },
+  { nome: "ADMTN - TEMPLO CENTRAL", pastor: "Pr. Felipe Carvalho das Virgens" },
+  { nome: "ADMTN - VILA DOIS IRMÃOS", pastor: "PB. JONATAS FERREIRA" },
+  { nome: "ADMTN - VILA MOISÉS", pastor: "Pb. Augusto Spinola" }
+];
+
 export default function FormularioBatismo() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -119,6 +139,16 @@ export default function FormularioBatismo() {
     const { name, value } = e.target;
     
     let processedValue = value;
+    if (name === "igreja") {
+      const selectedIgreja = igrejasData.find(i => i.nome === value);
+      if (selectedIgreja) {
+        setFormData((prev) => ({ ...prev, igreja: value, pastor: selectedIgreja.pastor }));
+        if (errors.igreja) setErrors((prev) => ({ ...prev, igreja: undefined }));
+        if (errors.pastor) setErrors((prev) => ({ ...prev, pastor: undefined }));
+        return;
+      }
+    }
+
     if (name === "cpf") {
       processedValue = formatCPF(value);
     } else if (name === "telefone") {
@@ -380,14 +410,19 @@ export default function FormularioBatismo() {
             <label htmlFor="igreja" className="text-sm font-medium text-gray-700">
               Igreja *
             </label>
-            <Input
+            <select
               id="igreja"
               name="igreja"
               value={formData.igreja}
               onChange={handleChange}
-              placeholder="Nome da igreja"
               required
-            />
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">Selecione a igreja...</option>
+              {igrejasData.map((i) => (
+                <option key={i.nome} value={i.nome}>{i.nome}</option>
+              ))}
+            </select>
             {errors.igreja && (
               <p className="text-sm text-red-600">{errors.igreja}</p>
             )}
