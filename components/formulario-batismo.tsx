@@ -292,9 +292,9 @@ export default function FormularioBatismo() {
     `space-y-2 ${errors[field] ? "has-errors" : ""}`;
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <Card className="border-0 shadow-2xl shadow-indigo-200/50 bg-white/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+      <CardContent className="p-8 sm:p-10">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
               {error}
@@ -501,8 +501,8 @@ export default function FormularioBatismo() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full mt-6" disabled={loading}>
-            {loading ? "Enviando..." : "Inscrever-se"}
+          <Button type="submit" className="w-full mt-8 h-12 text-lg font-semibold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 shadow-md hover:shadow-lg transition-all rounded-xl" disabled={loading}>
+            {loading ? "Enviando..." : "Finalizar Inscrição"}
           </Button>
         </form>
       </CardContent>
