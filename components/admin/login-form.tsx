@@ -27,13 +27,13 @@ const LoginForm = () => {
     setError(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
         password,
       });
 
-      if (error) {
-        setError(error.message);
+      if (signInError) {
+        setError(signInError.message);
       } else if (data.user) {
         // Login bem-sucedido, redirecionar para dashboard
         router.push('/admin/dashboard');
