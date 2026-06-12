@@ -8,7 +8,16 @@ interface Inscricao {
   telefone: string;
   igreja: string;
   pastor: string;
-  data_batismo: string;
+
+  cargo: string;
+  funcao: string;
+  cep: string;
+  rua: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  estado_civil: string;
 }
 
 export function generatePDF(inscricoes: Inscricao[], filtros?: {
@@ -16,16 +25,16 @@ export function generatePDF(inscricoes: Inscricao[], filtros?: {
   igreja?: string;
   pastor?: string;
 }) {
-  const doc = new jsPDF();
+  const doc = new jsPDF('landscape');
   
   // Cabeçalho
   doc.setFontSize(20);
-  doc.text('Igreja Assembléia de Deus', 105, 20, { align: 'center' });
+  doc.text('Igreja Assembléia de Deus', 148, 20, { align: 'center' });
   doc.setFontSize(16);
-  doc.text('Ministério Tancredo Neves', 105, 30, { align: 'center' });
+  doc.text('Ministério Tancredo Neves', 148, 30, { align: 'center' });
   
   doc.setFontSize(14);
-  doc.text('Relatório de Inscrições - Batismo', 105, 45, { align: 'center' });
+  doc.text('Relatório - Cadastro de Membros e Obreiros', 148, 45, { align: 'center' });
   
   // Informações dos filtros aplicados
   if (filtros) {
@@ -36,7 +45,7 @@ export function generatePDF(inscricoes: Inscricao[], filtros?: {
     
     if (filtrosTexto !== 'Filtros: ') {
       doc.setFontSize(10);
-      doc.text(filtrosTexto.slice(0, -3), 105, 55, { align: 'center' });
+      doc.text(filtrosTexto.slice(0, -3), 148, 55, { align: 'center' });
     }
   }
   
@@ -49,10 +58,10 @@ export function generatePDF(inscricoes: Inscricao[], filtros?: {
     minute: '2-digit',
   });
   doc.setFontSize(10);
-  doc.text(`Gerado em: ${dataGeracao}`, 105, 65, { align: 'center' });
+  doc.text(`Gerado em: ${dataGeracao}`, 148, 65, { align: 'center' });
   
   // Tabela
-  const headers = [['Nome', 'CPF', 'Idade', 'Telefone', 'Igreja', 'Pastor', 'Data Batismo']];
+  const headers = [['Nome', 'CPF', 'Idade', 'Tel.', 'Cargo/Função', 'Est. Civil', 'Endereço', 'Igreja/Pastor']];
   
   const data = inscricoes.map((inscricao) => {
     const hoje = new Date();
@@ -63,14 +72,20 @@ export function generatePDF(inscricoes: Inscricao[], filtros?: {
       idade--;
     }
     
+    const endereco = inscricao.cidade ? `${inscricao.cidade}/${inscricao.estado}` : '';
+    const cargoFuncao = [inscricao.cargo, inscricao.funcao].filter(Boolean).join(' / ');
+    const igrejaPastor = [inscricao.igreja, inscricao.pastor].filter(Boolean).join('\n');
+    
     return [
       inscricao.nome,
       inscricao.cpf,
       `${idade} anos`,
       inscricao.telefone,
-      inscricao.igreja,
-      inscricao.pastor,
-      new Date(inscricao.data_batismo).toLocaleDateString('pt-BR'),
+      cargoFuncao,
+      inscricao.estado_civil,
+      endereco,
+      igrejaPastor,
+
     ];
   });
   
@@ -91,12 +106,12 @@ export function generatePDF(inscricoes: Inscricao[], filtros?: {
     doc.setFontSize(8);
     doc.text(
       `Página ${i} de ${pageCount}`,
-      105,
+      148,
       doc.internal.pageSize.height - 10,
       { align: 'center' }
     );
   }
   
   // Salvar o PDF
-  doc.save(`inscricoes-batismo-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`cadastro-membros-${new Date().toISOString().slice(0, 10)}.pdf`);
 }

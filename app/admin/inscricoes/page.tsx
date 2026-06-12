@@ -15,8 +15,17 @@ interface Inscricao {
   telefone: string;
   igreja: string;
   pastor: string;
-  data_batismo: string;
+
   created_at: string;
+  cargo: string;
+  funcao: string;
+  cep: string;
+  rua: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  estado_civil: string;
 }
 
 export default function InscricoesPage() {
@@ -29,8 +38,7 @@ export default function InscricoesPage() {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroIgreja, setFiltroIgreja] = useState('');
   const [filtroPastor, setFiltroPastor] = useState('');
-  const [filtroDataInicio, setFiltroDataInicio] = useState('');
-  const [filtroDataFim, setFiltroDataFim] = useState('');
+
   
   // Opções únicas para dropdowns
   const [igrejas, setIgrejas] = useState<string[]>([]);
@@ -80,12 +88,7 @@ export default function InscricoesPage() {
       if (filtroPastor) {
         query = query.eq('pastor', filtroPastor);
       }
-      if (filtroDataInicio) {
-        query = query.gte('data_batismo', filtroDataInicio);
-      }
-      if (filtroDataFim) {
-        query = query.lte('data_batismo', filtroDataFim);
-      }
+
 
       const { data, error } = await query;
 
@@ -133,8 +136,7 @@ export default function InscricoesPage() {
     setFiltroNome('');
     setFiltroIgreja('');
     setFiltroPastor('');
-    setFiltroDataInicio('');
-    setFiltroDataFim('');
+
     fetchInscricoes();
   };
 
@@ -222,28 +224,7 @@ export default function InscricoesPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data Início
-              </label>
-              <input
-                type="date"
-                value={filtroDataInicio}
-                onChange={(e) => setFiltroDataInicio(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data Fim
-              </label>
-              <input
-                type="date"
-                value={filtroDataFim}
-                onChange={(e) => setFiltroDataFim(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
+
           </div>
           <div className="flex gap-2">
             <Button onClick={fetchInscricoes}>Aplicar Filtros</Button>
@@ -272,9 +253,7 @@ export default function InscricoesPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Pastor
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Data Batismo
-                  </th>
+
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
                   </th>
@@ -298,9 +277,7 @@ export default function InscricoesPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {inscricao.pastor}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(inscricao.data_batismo).toLocaleDateString('pt-BR')}
-                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                       <Link href={`/admin/inscricoes/${inscricao.id}/edit`}>
                         <Button size="sm" variant="outline">Editar</Button>

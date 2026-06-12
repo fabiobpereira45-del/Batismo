@@ -14,7 +14,16 @@ interface Inscricao {
   telefone: string;
   igreja: string;
   pastor: string;
-  data_batismo: string;
+
+  cargo: string;
+  funcao: string;
+  cep: string;
+  rua: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  estado_civil: string;
 }
 
 export default function EditarInscricaoPage({ params }: { params: { id: string } }) {
@@ -30,7 +39,16 @@ export default function EditarInscricaoPage({ params }: { params: { id: string }
     telefone: '',
     igreja: '',
     pastor: '',
-    data_batismo: '',
+
+    cargo: '',
+    funcao: '',
+    cep: '',
+    rua: '',
+    numero: '',
+    bairro: '',
+    cidade: '',
+    estado: '',
+    estado_civil: '',
   });
 
   useEffect(() => {
@@ -59,7 +77,16 @@ export default function EditarInscricaoPage({ params }: { params: { id: string }
           telefone: data.telefone,
           igreja: data.igreja,
           pastor: data.pastor,
-          data_batismo: data.data_batismo,
+
+          cargo: data.cargo || '',
+          funcao: data.funcao || '',
+          cep: data.cep || '',
+          rua: data.rua || '',
+          numero: data.numero || '',
+          bairro: data.bairro || '',
+          cidade: data.cidade || '',
+          estado: data.estado || '',
+          estado_civil: data.estado_civil || '',
         });
       }
     } catch (err: any) {
@@ -69,7 +96,7 @@ export default function EditarInscricaoPage({ params }: { params: { id: string }
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -89,7 +116,16 @@ export default function EditarInscricaoPage({ params }: { params: { id: string }
           telefone: formData.telefone,
           igreja: formData.igreja,
           pastor: formData.pastor,
-          data_batismo: formData.data_batismo,
+
+          cargo: formData.cargo,
+          funcao: formData.funcao,
+          cep: formData.cep,
+          rua: formData.rua,
+          numero: formData.numero,
+          bairro: formData.bairro,
+          cidade: formData.cidade,
+          estado: formData.estado,
+          estado_civil: formData.estado_civil,
         })
         .eq('id', formData.id);
 
@@ -202,17 +238,64 @@ export default function EditarInscricaoPage({ params }: { params: { id: string }
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Data do Batismo
-            </label>
-            <Input
-              name="data_batismo"
-              type="date"
-              value={formData.data_batismo}
-              onChange={handleChange}
-              required
-            />
+
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Cargo</label>
+              <select name="cargo" value={formData.cargo} onChange={handleChange} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <option value="">Selecione...</option>
+                <option value="Auxiliar">Auxiliar</option>
+                <option value="Diácono">Diácono</option>
+                <option value="Presbítero">Presbítero</option>
+                <option value="Evangelista">Evangelista</option>
+                <option value="Pastor">Pastor</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Função</label>
+              <select name="funcao" value={formData.funcao} onChange={handleChange} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <option value="">Selecione...</option>
+                <option value="Superintendente">Superintendente</option>
+                <option value="Vice">Vice</option>
+                <option value="Porteiro">Porteiro</option>
+                <option value="Dirg. Círculo de Oração">Dirg. Círculo de Oração</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Estado Civil</label>
+              <select name="estado_civil" value={formData.estado_civil} onChange={handleChange} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <option value="">Selecione...</option>
+                <option value="Solteiro">Solteiro(a)</option>
+                <option value="Casado">Casado(a)</option>
+                <option value="Divorciado">Divorciado(a)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+              <Input name="cep" value={formData.cep} onChange={handleChange} />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rua</label>
+              <Input name="rua" value={formData.rua} onChange={handleChange} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Número</label>
+              <Input name="numero" value={formData.numero} onChange={handleChange} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
+              <Input name="bairro" value={formData.bairro} onChange={handleChange} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+              <Input name="cidade" value={formData.cidade} onChange={handleChange} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+              <Input name="estado" value={formData.estado} onChange={handleChange} />
+            </div>
           </div>
 
           <div className="flex gap-4">
