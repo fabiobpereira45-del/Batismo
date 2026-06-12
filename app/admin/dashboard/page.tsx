@@ -43,6 +43,27 @@ export default function AdminDashboard() {
   const [filtroIgreja, setFiltroIgreja] = useState('');
   const [filtroPastor, setFiltroPastor] = useState('');
 
+  const [newPassword, setNewPassword] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState('');
+
+  const handleUpdatePassword = async () => {
+    if (newPassword.length < 6) {
+      setPasswordMessage('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+    setUpdatingPassword(true);
+    setPasswordMessage('');
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setUpdatingPassword(false);
+    if (error) {
+      setPasswordMessage('Erro ao atualizar: ' + error.message);
+    } else {
+      setPasswordMessage('Senha atualizada com sucesso!');
+      setNewPassword('');
+    }
+  };
+
   // Redirecionar se não for master
   useEffect(() => {
     if (!loading && !user) {
@@ -251,6 +272,31 @@ export default function AdminDashboard() {
               </Link>
             </div>
           )}
+        </div>
+
+        {/* Trocar Senha */}
+        <div className="bg-white shadow rounded-lg p-6 mt-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Configurações (Trocar Senha)</h2>
+          <div className="max-w-md">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nova Senha</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="No mínimo 6 caracteres"
+              />
+            </div>
+            <Button onClick={handleUpdatePassword} disabled={updatingPassword}>
+              {updatingPassword ? 'Atualizando...' : 'Atualizar Senha'}
+            </Button>
+            {passwordMessage && (
+              <p className={`mt-2 text-sm ${passwordMessage.includes('sucesso') ? 'text-green-600' : 'text-red-600'}`}>
+                {passwordMessage}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
