@@ -371,7 +371,7 @@ export default function FormularioBatismo() {
           
           <div className={inputClass("pastor")}>
             <label htmlFor="pastor" className="text-sm font-medium text-gray-700">
-              Pastor *
+              Seu Pastor *
             </label>
             <Input
               id="pastor"
