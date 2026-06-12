@@ -125,6 +125,10 @@ export default function FormularioBatismo() {
       processedValue = formatTelefone(value);
     } else if (name === "cep") {
       processedValue = formatCEP(value);
+      const cepLimpo = processedValue.replace(/\D/g, "");
+      if (cepLimpo.length === 8) {
+        buscarCep(cepLimpo);
+      }
     }
     
     setFormData((prev) => ({ ...prev, [name]: processedValue }));
@@ -172,6 +176,26 @@ export default function FormularioBatismo() {
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const buscarCep = async (cepBuscado: string) => {
+    if (cepBuscado.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cepBuscado}/json/`);
+        const data = await response.json();
+        if (!data.erro) {
+          setFormData((prev) => ({
+            ...prev,
+            rua: data.logradouro || prev.rua,
+            bairro: data.bairro || prev.bairro,
+            cidade: data.localidade || prev.cidade,
+            estado: data.uf || prev.estado,
+          }));
+        }
+      } catch (error) {
+        console.error("Erro ao buscar CEP:", error);
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -400,6 +424,7 @@ export default function FormularioBatismo() {
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">Selecione...</option>
+              <option value="Membro">Membro</option>
               <option value="Auxiliar">Auxiliar</option>
               <option value="Diácono">Diácono</option>
               <option value="Presbítero">Presbítero</option>

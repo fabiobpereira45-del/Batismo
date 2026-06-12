@@ -96,9 +96,42 @@ export default function EditarInscricaoPage({ params }: { params: { id: string }
     }
   };
 
+  const buscarCep = async (cepBuscado: string) => {
+    const cepLimpo = cepBuscado.replace(/\D/g, "");
+    if (cepLimpo.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+        const data = await response.json();
+        if (!data.erro) {
+          setFormData((prev) => ({
+            ...prev,
+            rua: data.logradouro || prev.rua,
+            bairro: data.bairro || prev.bairro,
+            cidade: data.localidade || prev.cidade,
+            estado: data.uf || prev.estado,
+          }));
+        }
+      } catch (error) {
+        console.error("Erro ao buscar CEP:", error);
+      }
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    let processedValue = value;
+    if (name === 'cep') {
+      const digits = value.replace(/\D/g, "");
+      if (digits.length <= 5) processedValue = digits;
+      else processedValue = `${digits.slice(0, 5)}-${digits.slice(5, 8)}`;
+      
+      if (digits.length === 8) {
+        buscarCep(digits);
+      }
+    }
+    
+    setFormData((prev) => ({ ...prev, [name]: processedValue }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -245,6 +278,7 @@ export default function EditarInscricaoPage({ params }: { params: { id: string }
               <label className="block text-sm font-medium text-gray-700 mb-1">Cargo</label>
               <select name="cargo" value={formData.cargo} onChange={handleChange} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                 <option value="">Selecione...</option>
+                <option value="Membro">Membro</option>
                 <option value="Auxiliar">Auxiliar</option>
                 <option value="Diácono">Diácono</option>
                 <option value="Presbítero">Presbítero</option>
