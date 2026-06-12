@@ -16,7 +16,15 @@ interface Inscricao {
   telefone: string;
   igreja: string;
   pastor: string;
-  data_batismo: string;
+  cargo: string;
+  funcao: string;
+  cep: string;
+  rua: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  estado_civil: string;
   created_at: string;
 }
 
@@ -215,9 +223,7 @@ export default function AdminDashboard() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Igreja
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Data Batismo
-                  </th>
+
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -232,9 +238,7 @@ export default function AdminDashboard() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {inscricao.igreja}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(inscricao.data_batismo).toLocaleDateString('pt-BR')}
-                    </td>
+
                   </tr>
                 ))}
               </tbody>
